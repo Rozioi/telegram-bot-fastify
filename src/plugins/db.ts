@@ -6,7 +6,7 @@ db.serialize(() => {
 	db.run(`
         CREATE TABLE IF NOT EXISTS users (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
-            username TEXT UNIQUE NOT NULL,  
+            username TEXT,  
             tg_chat_id INTEGER UNIQUE NOT NULL,  
             full_name TEXT,  
             reg BOOLEAN  
@@ -25,6 +25,19 @@ interface IFailedResponse {
 	result: null;
 }
 type IResponse<T> = ISuccessResponse<T> | IFailedResponse;
+
+export async function getAllData<ReturnT>(db: Database, sql: string, values?: any[]): Promise<IResponse<ReturnT[]>> {
+    return new Promise<IResponse<ReturnT[]>>((res, rej) => {
+        db.all(sql, values || [], (err, rows: ReturnT[]) => {
+            if (err) {
+                console.error("Database error in getAllData:", err);
+                rej({ status: 0, error: err, result: [] });
+                return;
+            }
+            res({ status: 1, error: "", result: rows });
+        });
+    });
+}
 
 export async function getData<ReturnT>(db: Database, sql: string, values?: any[]) {
 	return new Promise<IResponse<ReturnT>>((res, rej) => {

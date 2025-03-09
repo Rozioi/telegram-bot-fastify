@@ -25,7 +25,6 @@ function reqBodyValidaton(data: unknown): [IRequestBody, true] | [string, false]
 
 	if (!full_name) return ["full_name is null", false];
 	if (typeof full_name !== "string") return ["full_name must be a string", false];
-	if (!username) return ["username is null", false];
 	if (typeof username !== "string") return ["username must be a string", false];
 
 	if (!chatId) return ["chat id is null", false];

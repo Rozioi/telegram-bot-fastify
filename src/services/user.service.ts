@@ -1,4 +1,4 @@
-import db, { getData } from "../plugins/db";
+import db, { getData, getAllData } from "../plugins/db";
 
 export interface IUser {
 	id: number;
@@ -10,14 +10,14 @@ export interface IUser {
 
 export class UserService {
 	static async getAllUsers(): Promise<any[]> {
-		const { status, result, error } = await getData<any[]>(db, "SELECT * FROM users");
+		const { status, result, error } = await getAllData<any[]>(db, "SELECT * FROM users");
 		if (status !== 1) {
 			console.error("getAllUsers - error:");
 			console.error(error);
 			return [];
 		}
 		return result;
-	}
+	};
 	static CreateNewUser(full_name: string, username: string, chatId: number) {
 		// Здесь оставил new Promise, т.к иногда нужно разные данные с этого запроса вытаскивать, но можешь также вынести в отдельную функицю
 		return new Promise<number>((resolve, reject) => {
@@ -40,7 +40,7 @@ export class UserService {
 		}
 		if (res === null) return null;
 		const user = res.result as IUser;
-
+		if (!user) return null;
 		return { ...user, reg: (user?.reg as any) === 1 };
 	}
 	static async registerSecureUser(id: number): Promise<void> {

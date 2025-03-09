@@ -7,6 +7,7 @@ export const app = Fastify({
 	logger: true,
 });
 export const bot: Telegraf<Context> = new Telegraf(config.telegramBotToken);
+
 app.addHook("onReady", async () => {});
 
 FastifyRoute(

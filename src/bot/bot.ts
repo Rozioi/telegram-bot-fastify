@@ -21,7 +21,7 @@ export function setupBotHandlers(): void {
 	});
 	bot.command("start", async ctx => {
 		const { first_name, last_name, username, id } = ctx.from;
-		const full_name = `${first_name}` + `${last_name}`;
+		const full_name = `${first_name ?? ''}` + `${last_name ?? ''}`;
 		try {
 			const response = await fetch("http://localhost:3000/api/v1/register", {
 				method: "POST",
@@ -30,10 +30,11 @@ export function setupBotHandlers(): void {
 				},
 				body: JSON.stringify({
 					full_name: full_name,
-					username: username,
+					username: username ?? '',
 					chatId: id,
 				}),
 			});
+			
 			const res = await response.json().catch(() => ({ message: "Неизвестная ошибка" }));
 			if (!response.ok) {
 				const error = await response.json().catch(() => ({ message: "Неизвестная ошибка" }));
@@ -59,4 +60,5 @@ export function setupBotHandlers(): void {
 			await ctx.reply("🚫 Произошла ошибка при подключении к серверу");
 		}
 	});
+	bot.launch();
 }
