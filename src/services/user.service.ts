@@ -1,53 +1,54 @@
-import { resolve } from 'path';
-import db from '../plugins/db';
+import db, { getData } from "../plugins/db";
 
-interface User {
-    id: number;
-    full_name?: string;
-    username?: string;
-    tg_chat_id: number;
-    reg: boolean;
+export interface IUser {
+	id: number;
+	full_name?: string;
+	username?: string;
+	tg_chat_id: number;
+	reg: boolean;
 }
 
 export class UserService {
-    static getAllUsers(): Promise<any[]>{
-        return new Promise((resolve,reject) => {
-            db.all('SELECT * FROM users', (err, rows) => {
-                if(err) reject(err);
-                else resolve(rows);
-            })
-        })
-    };
-    static CreateNewUser(full_name:string, username:string, chatId: number): Promise<number>{
-        return new Promise((resolve,reject) => {
-            db.run('INSERT INTO users (full_name, username, tg_chat_id, reg) VALUES (?, ?, ?, 0) ', [full_name, username,chatId],  function(err) {
-                if (err){
-                    reject(err);
-                } else {
-                    resolve(this.lastID);
-                }
-            })
-        })
-    };
-    static getUserInfoById(id: number): Promise<User | null>{
-        return new Promise((resolve, reject) => {
-            db.get('SELECT * FROM users WHERE tg_chat_id = ?', [id] , (err,row: any) => {
-                if (err){reject(err)}
-                else {
-                    if (row) {
-                        row.reg = row.reg === 1;
-                    }
-                    resolve(row || null);
-                };
-            })
-        })
-    };
-    static registerSecureUser(id:number): Promise<void>{
-        return new Promise((resolve,reject) => {
-            db.run('UPDATE users SET reg = 1 WHERE tg_chat_id = ?', [id], (err) => {
-               if(err){reject(err)};
-               resolve(); 
-            })
-        })
-    }
+	static async getAllUsers(): Promise<any[]> {
+		const { status, result, error } = await getData<any[]>(db, "SELECT * FROM users");
+		if (status !== 1) {
+			console.error("getAllUsers - error:");
+			console.error(error);
+			return [];
+		}
+		return result;
+	}
+	static CreateNewUser(full_name: string, username: string, chatId: number) {
+		// Здесь оставил new Promise, т.к иногда нужно разные данные с этого запроса вытаскивать, но можешь также вынести в отдельную функицю
+		return new Promise<number>((resolve, reject) => {
+			db.run("INSERT INTO users (full_name, username, tg_chat_id, reg) VALUES (?, ?, ?, 0) ", [full_name, username, chatId], function (err) {
+				if (err) {
+					reject(err);
+					return;
+				}
+				resolve(this.lastID);
+			});
+		});
+	}
+	static async getUserInfoById(id: number): Promise<IUser | null> {
+		// Перенёс конструкцию new Promise в отдельную функцию, чтобы не повторять код
+		const res = await getData<IUser | null>(db, "SELECT * FROM users WHERE tg_chat_id = ?", [id]);
+		if (!res.status) {
+			console.error("getUserInfoById - error:");
+			console.error(res.error);
+			return null;
+		}
+		if (res === null) return null;
+		const user = res.result as IUser;
+
+		return { ...user, reg: (user?.reg as any) === 1 };
+	}
+	static async registerSecureUser(id: number): Promise<void> {
+		const { result, error, status } = await getData(db, "UPDATE users SET reg = 1 WHERE tg_chat_id = ?", [id]);
+		if (status !== 1) {
+			console.error("registerSecureUser - error:");
+			console.error(error);
+			return;
+		}
+	}
 }
