@@ -1,17 +1,18 @@
 import Fastify from "fastify";
-import {FastifyRoute} from "./utils/fastify-route";
-import {UserRoutes} from "./routes/user.routes";
-import TgBot, {Message} from 'node-telegram-bot-api';
-import {config} from "./config/env";
+import { Context, Telegraf } from "telegraf";
+import { config } from "./config/env";
+import { UserRoutes } from "./routes/user.routes";
+import { FastifyRoute } from "./utils/fastify-route";
 export const app = Fastify({
-    logger: true
+	logger: true,
 });
-export const bot = new TgBot(config.telegramBotToken, { polling: true});
+export const bot: Telegraf<Context> = new Telegraf(config.telegramBotToken);
+app.addHook("onReady", async () => {});
 
-app.addHook('onReady', async () => {
-    
-});
-
-FastifyRoute({
-    fastify: app
-},UserRoutes, {prefix: '/api/v1'})
+FastifyRoute(
+	{
+		fastify: app,
+	},
+	UserRoutes,
+	{ prefix: "/api/v1" }
+);
