@@ -9,7 +9,7 @@ export const app = Fastify({
 });
 export const bot: Telegraf<Context> = new Telegraf(config.telegramBotToken);
 
-app.addHook("onReady", async () => {});
+app.addHook("onReady", async () => {await bot.telegram.sendMessage(7044218203,'Технический перерыв закончен')});
 
 FastifyRoute(
 	{
