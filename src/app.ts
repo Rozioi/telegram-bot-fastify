@@ -3,6 +3,7 @@ import { Context, Telegraf } from "telegraf";
 import { config } from "./config/env";
 import { UserRoutes } from "./routes/user.routes";
 import { FastifyRoute } from "./utils/fastify-route";
+import { PetRoutes } from "./routes/pet.routes";
 export const app = Fastify({
 	logger: true,
 });
@@ -15,5 +16,12 @@ FastifyRoute(
 		fastify: app,
 	},
 	UserRoutes,
-	{ prefix: "/api/v1" }
+	{ prefix: "/api/v1/user" }
 );
+FastifyRoute(
+	{
+		fastify: app,
+	},
+	PetRoutes,
+	{ prefix: "/api/v1/pet"}
+)

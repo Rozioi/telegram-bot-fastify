@@ -2,6 +2,8 @@ import sqlite3, { Database } from "sqlite3";
 
 const db = new sqlite3.Database("./database/database.db");
 
+
+
 db.serialize(() => {
 	db.run(`
         CREATE TABLE IF NOT EXISTS users (
@@ -12,6 +14,19 @@ db.serialize(() => {
             reg BOOLEAN  
         )
     `);
+	db.run(`
+		CREATE TABLE IF NOT EXISTS pets (
+		id INTEGER PRIMARY KEY AUTOINCREMENT,
+		name TEXT NOT NULL,
+		species TEXT,
+		breed TEXT,
+		age INTEGER,
+		user_id INTEGER NOT NULL,
+		second_user_id INTEGER,
+		FOREIGN KEY (user_id) REFERENCES users(tg_chat_id) ON DELETE CASCADE,
+		FOREIGN KEY (second_user_id) REFERENCES users(tg_chat_id) ON DELETE SET NULL
+		)
+		`)
 });
 
 interface ISuccessResponse<T> {
